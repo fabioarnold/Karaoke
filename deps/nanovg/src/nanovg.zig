@@ -58,22 +58,9 @@ pub const TextAlign = struct {
         _,
     };
 
-    horizonal: HorizontalAlign = .left,
+    horizontal: HorizontalAlign = .left,
     vertical: VerticalAlign = .baseline,
 };
-
-// pub const TextAlign = enum(u8) {
-//     // Horizontal align
-//     left = 1 << 0,
-//     center = 1 << 1,
-//     right = 1 << 2,
-//     // Vertical align
-//     top = 1 << 3,
-//     middle = 1 << 4,
-//     bottom = 1 << 5,
-//     baseline = 1 << 6, // Default, align text vertically to baseline.
-//     _,
-// };
 
 pub const GlyphPosition = c.NVGglyphPosition;
 
@@ -642,7 +629,7 @@ pub fn fontBlur(blur: f32) void {
 
 // Sets the text align of current text style, see NVGalign for options.
 pub fn textAlign(text_align: TextAlign) void {
-    c.nvgTextAlign(ctx, @enumToInt(text_align.horizonal) | @enumToInt(text_align.vertical));
+    c.nvgTextAlign(ctx, @enumToInt(text_align.horizontal) | @enumToInt(text_align.vertical));
 }
 
 // Sets the font face based on specified id of current text style.

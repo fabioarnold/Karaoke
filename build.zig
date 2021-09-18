@@ -50,7 +50,7 @@ pub fn build(b: *std.build.Builder) !void {
     // exe.addCSourceFile("src/myffmpeg.c", &c_flags);
     exe.addCSourceFile("src/ffplay_modified.c", &c_flags);
     exe.addCSourceFile("src/gl_render.c", &c_flags);
-    exe.addCSourceFile("src/gl2/src/glad.c", &c_flags); // TODO: only on win/linux?
+    exe.addCSourceFile("src/gl2/src/glad.c", &c_flags);
     exe.addCSourceFile("deps/nanovg/src/nanovg.c", &c_flags);
     exe.addCSourceFile("deps/nanovg/src/nanovg_gl2_impl.c", &c_flags);
 

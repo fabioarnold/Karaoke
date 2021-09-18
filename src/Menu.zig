@@ -63,7 +63,7 @@ pub fn drawTitle(self: Self, width: f32, height: f32) void {
     const center_y = 0.5 * height;
     const text_h = 0.3 * height;
     nvg.fontSize(text_h);
-    nvg.textAlign(.{ .horizonal = .center, .vertical = .middle });
+    nvg.textAlign(.{ .horizontal = .center, .vertical = .middle });
     nvg.fontFaceId(self.font_bold);
     nvg.fillColor(nvg.rgbf(1, 1, 1));
     _ = nvg.text(center_x, center_y, "カラオケ"); // カラオケ
@@ -90,7 +90,7 @@ pub fn drawUi(self: *Self, width: f32, height: f32) void {
 
     if (self.song_selected < self.songs.len) {
         const song = self.songs[self.song_selected];
-        nvg.textAlign(.{ .horizonal = .center });
+        nvg.textAlign(.{ .horizontal = .center });
         nvg.fontFaceId(self.font_bold);
         nvg.fillColor(nvg.rgbf(0, 0, 0));
         nvg.fontBlur(10);
@@ -110,7 +110,7 @@ pub fn drawUi(self: *Self, width: f32, height: f32) void {
 
     if (self.songs.len == 0) {
         const text = "(No songs found)";
-        nvg.textAlign(.{ .horizonal = .center });
+        nvg.textAlign(.{ .horizontal = .center });
         nvg.fontFaceId(self.font_regular);
         nvg.fillColor(nvg.rgbf(0, 0, 0));
         nvg.fontBlur(10);
@@ -132,7 +132,7 @@ pub fn drawPauseUi(self: *Self, width: f32, height: f32) void {
     nvg.fontSize(text_h);
     const center_x = 0.5 * width;
     const center_y = 0.5 * height;
-    nvg.textAlign(.{ .horizonal = .center });
+    nvg.textAlign(.{ .horizontal = .center });
     nvg.fontFaceId(self.font_bold);
     nvg.fillColor(nvg.rgbf(0, 0, 0));
     nvg.fontBlur(10);
