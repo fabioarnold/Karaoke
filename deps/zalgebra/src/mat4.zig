@@ -1,10 +1,17 @@
 const std = @import("std");
 const math = std.math;
 const testing = std.testing;
+const print = std.debug.print;
 const root = @import("main.zig");
-usingnamespace @import("vec4.zig");
-usingnamespace @import("vec3.zig");
-usingnamespace @import("quaternion.zig");
+const vec4 = @import("vec4.zig");
+const vec3 = @import("vec3.zig");
+const quat = @import("quaternion.zig");
+
+const Vec3 = vec3.Vec3;
+const Vector3 = vec3.Vector3;
+const Vector4 = vec4.Vector4;
+const Quaternion = quat.Quaternion;
+const Quat = quat.Quat;
 
 pub const Mat4 = Mat4x4(f32);
 pub const Mat4_f64 = Mat4x4(f64);
@@ -45,6 +52,22 @@ pub fn Mat4x4(comptime T: type) type {
                     data[12..16].*,
                 },
             };
+        }
+
+        /// Negate the given matrix.
+        pub fn negate(mat: Self) Self {
+            var result = mat;
+
+            var col: usize = 0;
+            var row: usize = 0;
+
+            while (col < 4) : (col += 1) {
+                while (row < 4) : (row += 1) {
+                    result.data[col][row] = -mat.data[col][row];
+                }
+            }
+
+            return result;
         }
 
         /// Return a pointer to the inner data of the matrix.
@@ -396,7 +419,7 @@ pub fn Mat4x4(comptime T: type) type {
                 \\
             ;
 
-            std.debug.print(string, .{
+            print(string, .{
                 self.data[0][0],
                 self.data[1][0],
                 self.data[2][0],
@@ -435,6 +458,27 @@ test "zalgebra.Mat4.eql" {
 
     try testing.expectEqual(Mat4.eql(a, b), true);
     try testing.expectEqual(Mat4.eql(a, c), false);
+}
+
+test "zalgebra.Mat4.negate" {
+    const a = Mat4{
+        .data = .{
+            .{ 1, 2, 3, 4 },
+            .{ 5, -6, 7, 8 },
+            .{ 9, 10, 11, -12 },
+            .{ 13, 14, 15, 16 },
+        },
+    };
+    const b = Mat4{
+        .data = .{
+            .{ -1, -2, -3, -4 },
+            .{ -5, 6, -7, -8 },
+            .{ -9, -10, -11, 12 },
+            .{ -13, -14, -15, -16 },
+        },
+    };
+
+    try testing.expectEqual(Mat4.eql(a.negate(), b), true);
 }
 
 test "zalgebra.Mat4.fromSlice" {

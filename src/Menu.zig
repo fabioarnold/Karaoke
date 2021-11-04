@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const nvg = @import("nanovg");
 
 const Song = @import("Song.zig");
@@ -20,7 +21,7 @@ pub fn loadFonts(self: *Self) !void {
     if (self.font_bold == -1) return error.FileNotFound;
     self.font_regular = nvg.createFont("bold", "data/fonts/Roboto-Regular.ttf");
     if (self.font_regular == -1) return error.FileNotFound;
-    const font_emoji_path = if (std.builtin.os.tag == .windows) "C:\\Windows\\Fonts\\seguiemj.ttf" else "data/fonts/NotoEmoji-Regular.ttf";
+    const font_emoji_path = if (builtin.os.tag == .windows) "C:\\Windows\\Fonts\\seguiemj.ttf" else "data/fonts/NotoEmoji-Regular.ttf";
     const font_emoji = nvg.createFont("emoji", font_emoji_path);
     if (font_emoji == -1) return error.FileNotFound;
     const font_cjk_bold = nvg.createFont("cjk", "data/fonts/NotoSansCJKjp-Bold.otf");

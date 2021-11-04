@@ -10,7 +10,7 @@ image: ?nvg.Image = null,
 const Self = @This();
 const Song = Self;
 
-pub fn loadSongs(allocator: *std.mem.Allocator, pref_path: []const u8) ![]Song {
+pub fn loadSongs(allocator: std.mem.Allocator, pref_path: []const u8) ![]Song {
     var arr = std.ArrayList(Song).init(allocator);
     defer arr.deinit();
     const buf = try allocator.alloc(u8, 0x1000); // json can't be larger than 64k
@@ -58,7 +58,7 @@ pub fn loadSongs(allocator: *std.mem.Allocator, pref_path: []const u8) ![]Song {
     return arr.toOwnedSlice();
 }
 
-pub fn resolvePaths(self: *Self, allocator: *std.mem.Allocator, path_prefix: []const u8) !void {
+pub fn resolvePaths(self: *Self, allocator: std.mem.Allocator, path_prefix: []const u8) !void {
     if (!std.fs.path.isAbsolute(self.album_art)) {
         const old_path = self.album_art;
         self.album_art = try std.fs.path.join(allocator, &.{ path_prefix, self.album_art });
@@ -71,7 +71,7 @@ pub fn resolvePaths(self: *Self, allocator: *std.mem.Allocator, path_prefix: []c
     }
 }
 
-pub fn free(self: Self, allocator: *std.mem.Allocator) void {
+pub fn free(self: Self, allocator: std.mem.Allocator) void {
     allocator.free(self.title);
     allocator.free(self.artist);
     allocator.free(self.album_art);

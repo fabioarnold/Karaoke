@@ -2,6 +2,7 @@ const std = @import("std");
 const root = @import("main.zig");
 const math = std.math;
 const testing = std.testing;
+const panic = std.debug.panic;
 
 pub const Vec2 = Vector2(f32);
 pub const Vec2_f64 = Vector2(f64);
@@ -39,6 +40,11 @@ pub fn Vector2(comptime T: type) type {
 
         pub fn up() Self {
             return Self.new(0, 1);
+        }
+
+        /// Negate the given vector.
+        pub fn negate(self: Self) Self {
+            return self.scale(-1);
         }
 
         /// Cast a type to another type. Only for integers and floats.
@@ -171,6 +177,12 @@ test "zalgebra.Vec2.set" {
     var a = Vec2.new(2.5, 2.5);
     var b = Vec2.set(2.5);
     try testing.expectEqual(Vec2.eql(a, b), true);
+}
+
+test "zalgebra.Vec2.negate" {
+    var a = Vec2.set(5);
+    var b = Vec2.set(-5);
+    try testing.expectEqual(Vec2.eql(a.negate(), b), true);
 }
 
 test "zalgebra.Vec2.getAngle" {

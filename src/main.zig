@@ -2,6 +2,7 @@ const ORG_NAME = "FabioWare";
 const APP_NAME = "Karaoke";
 
 const std = @import("std");
+const builtin = @import("builtin");
 const c = @cImport({
     @cInclude("video.h");
     @cInclude("glad/glad.h");
@@ -40,7 +41,7 @@ const AppData = struct {
         show_intro: bool = false,
 
         fn load(self: *Settings, pref_path: []const u8) !void {
-            var allocator = &std.heap.FixedBufferAllocator.init(&buf).allocator;
+            const allocator = std.heap.FixedBufferAllocator.init(&buf).allocator();
             const filepath = try std.fs.path.join(allocator, &.{ pref_path, "settings.json" });
             defer allocator.free(filepath);
             const file = try std.fs.cwd().openFile(filepath, .{});
@@ -51,7 +52,7 @@ const AppData = struct {
         }
 
         fn write(self: Settings, pref_path: []const u8) !void {
-            var allocator = &std.heap.FixedBufferAllocator.init(&buf).allocator;
+            const allocator = std.heap.FixedBufferAllocator.init(&buf).allocator();
             const filepath = try std.fs.path.join(allocator, &.{ pref_path, "settings.json" });
             defer allocator.free(filepath);
             var file = try std.fs.cwd().createFile(filepath, .{});
@@ -69,7 +70,7 @@ const AppData = struct {
     video_song: ?*c.VideoState = null,
     vc: ?*c.VideoContext = null,
 
-    fn load(app: *AppData, allocator: *std.mem.Allocator, pref_path: []const u8) !void {
+    fn load(app: *AppData, allocator: std.mem.Allocator, pref_path: []const u8) !void {
         app.menu.songs = try Song.loadSongs(allocator, pref_path);
         for (app.menu.songs) |*song| {
             const filepath = try allocator.dupeZ(u8, song.album_art);
@@ -84,12 +85,12 @@ const AppData = struct {
             app.video_background = c.stream_open("data/intro.mp4", app.vc) orelse return error.StreamOpenFail;
         } else {
             app.state = .menu;
-            app.video_background = c.stream_open("data/background.mov", app.vc) orelse return error.StreamOpenFail;
+            app.video_background = c.stream_open("data/bluedust.mp4", app.vc) orelse return error.StreamOpenFail;
             c.video_set_looping(app.video_background, 1);
         }
     }
 
-    fn free(app: *AppData, allocator: *std.mem.Allocator) void {
+    fn free(app: *AppData, allocator: std.mem.Allocator) void {
         for (app.menu.songs) |song| song.free(allocator);
         allocator.free(app.menu.songs);
 
@@ -158,7 +159,7 @@ const AppData = struct {
                 if (app.menu.song_selected < app.menu.songs.len) {
                     c.video_set_paused(app.video_background, 1);
                     const song = app.menu.songs[app.menu.song_selected];
-                    var allocator = &std.heap.FixedBufferAllocator.init(&path_buf).allocator;
+                    const allocator = std.heap.FixedBufferAllocator.init(&path_buf).allocator();
                     const filepath = try allocator.dupeZ(u8, song.video);
                     defer allocator.free(filepath);
                     app.video_song = c.stream_open(filepath, app.vc) orelse return error.StreamOpenFail;
@@ -315,7 +316,7 @@ fn initGl() void {
     if (program.uniformLocation("tex2")) |tex2| program.uniform1i(tex2, 2);
 }
 
-fn sdlAudioCallback(userdata: ?*c_void, stream: [*c]u8, len: c_int) callconv(.C) void {
+fn sdlAudioCallback(userdata: ?*anyopaque, stream: [*c]u8, len: c_int) callconv(.C) void {
     const queue_len = c.SDL_GetQueuedAudioSize(audio_input_dev);
     if (queue_len >= len and len > 0) {
         const dequeued_len = c.SDL_DequeueAudio(audio_input_dev, stream, @intCast(c_uint, len));
@@ -348,7 +349,7 @@ fn sdlToggleFullscreen() void {
     }
 }
 
-fn sdlEventWatch(userdata: ?*c_void, sdl_event_ptr: [*c]c.SDL_Event) callconv(.C) c_int {
+fn sdlEventWatch(userdata: ?*anyopaque, sdl_event_ptr: [*c]c.SDL_Event) callconv(.C) c_int {
     var app_data = @ptrCast(*AppData, @alignCast(@alignOf(*AppData), userdata.?));
     if (app_data.quit) return 1;
     const sdl_event = sdl_event_ptr[0];
@@ -388,7 +389,7 @@ fn eventLoop(app: *AppData) !void {
 
 pub fn main() anyerror!void {
     // enable High DPI on Windows
-    if (std.builtin.os.tag == .windows) _ = SetProcessDPIAware();
+    if (builtin.os.tag == .windows) _ = SetProcessDPIAware();
 
     var gpa = std.heap.GeneralPurposeAllocator(.{
         .enable_memory_limit = true,
@@ -397,20 +398,20 @@ pub fn main() anyerror!void {
         const leaked = gpa.deinit();
         if (leaked) @panic("Memory leak :(");
     }
-    const allocator = &gpa.allocator;
+    const allocator = gpa.allocator();
 
     var app_data = AppData{};
 
     const flags = c.SDL_INIT_VIDEO | c.SDL_INIT_AUDIO;
     if (c.SDL_Init(flags) != 0) {
-        std.log.crit("SDL_Init failed: {s}", .{c.SDL_GetError()});
+        std.log.err("SDL_Init failed: {s}", .{c.SDL_GetError()});
         return;
     }
     defer c.SDL_Quit();
 
     const sdl_pref_path = c.SDL_GetPrefPath(ORG_NAME, APP_NAME);
     if (sdl_pref_path == null) {
-        std.log.crit("SDL_GetPrefPath failed: {s}", .{c.SDL_GetError()});
+        std.log.err("SDL_GetPrefPath failed: {s}", .{c.SDL_GetError()});
         return;
     }
     const pref_path = std.mem.sliceTo(sdl_pref_path, 0);
@@ -435,7 +436,7 @@ pub fn main() anyerror!void {
     }
     window = c.SDL_CreateWindow("Karaoke", window_x, window_y, window_width, window_height, window_flags);
     if (window == null) {
-        std.log.crit("SDL_CreateWindow failed: {s}", .{c.SDL_GetError()});
+        std.log.err("SDL_CreateWindow failed: {s}", .{c.SDL_GetError()});
         return;
     }
     defer c.SDL_DestroyWindow(window);

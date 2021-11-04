@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 
 const c = @cImport({
     @cInclude("glad/glad.h");
@@ -111,7 +112,7 @@ pub const ErrorHandling = enum {
 
 const error_handling: ErrorHandling = if (@hasDecl(@import("root"), ""))
     @import("root").opengl_error_handling
-else if (std.builtin.mode == .ReleaseFast)
+else if (builtin.mode == .ReleaseFast)
     .none
 else
     .assert;
@@ -282,7 +283,7 @@ pub fn debugMessageCallback(context: anytype, comptime handler: DebugMessageCall
             c_severity: c.GLenum,
             length: c.GLsizei,
             c_message: [*c]const c.GLchar,
-            userParam: ?*const c_void,
+            userParam: ?*const anyopaque,
         ) callconv(.C) void {
             const debug_source = translateSource(c_source);
             const msg_type = translateMessageType(c_msg_type);
@@ -301,7 +302,7 @@ pub fn debugMessageCallback(context: anytype, comptime handler: DebugMessageCall
     if (is_void)
         c.glDebugMessageCallback(H.callback, null)
     else
-        c.glDebugMessageCallback(H.callback, @ptrCast(?*const c_void, context));
+        c.glDebugMessageCallback(H.callback, @ptrCast(?*const anyopaque, context));
     checkError();
 }
 
@@ -434,7 +435,7 @@ pub fn vertexAttribPointer(attribindex: u32, size: u32, attribute_type: Type, no
         @enumToInt(attribute_type),
         b2gl(normalized),
         cs2gl(stride),
-        if (relativeoffset != null) @intToPtr(?*c_void, relativeoffset.?) else null,
+        if (relativeoffset != null) @intToPtr(?*anyopaque, relativeoffset.?) else null,
     );
     checkError();
 }
@@ -872,7 +873,7 @@ pub const ElementType = enum(c.GLenum) {
     u32 = c.GL_UNSIGNED_INT,
 };
 
-pub fn drawElements(primitiveType: PrimitiveType, count: usize, element_type: ElementType, indices: ?*const c_void) void {
+pub fn drawElements(primitiveType: PrimitiveType, count: usize, element_type: ElementType, indices: ?*const anyopaque) void {
     c.glDrawElements(
         @enumToInt(primitiveType),
         cs2gl(count),
@@ -882,7 +883,7 @@ pub fn drawElements(primitiveType: PrimitiveType, count: usize, element_type: El
     checkError();
 }
 
-pub fn drawElementsInstanced(primitiveType: PrimitiveType, count: usize, element_type: ElementType, indices: ?*const c_void, instance_count: usize) void {
+pub fn drawElementsInstanced(primitiveType: PrimitiveType, count: usize, element_type: ElementType, indices: ?*const anyopaque, instance_count: usize) void {
     c.glDrawElementsInstanced(
         @enumToInt(primitiveType),
         cs2gl(count),
