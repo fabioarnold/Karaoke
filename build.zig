@@ -2,12 +2,12 @@ const std = @import("std");
 
 const nanovg = std.build.Pkg{
     .name = "nanovg",
-    .path = std.build.FileSource.relative("deps/nanovg/src/nanovg.zig"),
+    .source = std.build.FileSource.relative("deps/nanovg/src/nanovg.zig"),
 };
 
 const zalgebra = std.build.Pkg{
     .name = "zalgebra",
-    .path = std.build.FileSource.relative("deps/zalgebra/src/main.zig"),
+    .source = std.build.FileSource.relative("deps/zalgebra/src/main.zig"),
 };
 
 pub fn build(b: *std.build.Builder) !void {
@@ -43,9 +43,9 @@ pub fn build(b: *std.build.Builder) !void {
     exe.addPackage(nanovg);
     exe.addPackage(zalgebra);
 
-    exe.addIncludeDir("src");
-    exe.addIncludeDir("src/gl2/include");
-    exe.addIncludeDir("deps/nanovg/src");
+    exe.addIncludePath("src");
+    exe.addIncludePath("src/gl2/include");
+    exe.addIncludePath("deps/nanovg/src");
     const c_flags = [_][]const u8{ "-O0", "-g", "-Werror" };
     // exe.addCSourceFile("src/myffmpeg.c", &c_flags);
     exe.addCSourceFile("src/ffplay_modified.c", &c_flags);

@@ -123,7 +123,6 @@ pub fn drawUi(self: *Self, width: f32, height: f32) void {
 }
 
 pub fn drawPauseUi(self: *Self, width: f32, height: f32) void {
-    _ = self;
     nvg.beginPath();
     nvg.rect(0, 0, width, height);
     nvg.fillColor(nvg.rgbaf(0, 0, 0, 0.5));

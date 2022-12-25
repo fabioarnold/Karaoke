@@ -41,7 +41,8 @@ const AppData = struct {
         show_intro: bool = false,
 
         fn load(self: *Settings, pref_path: []const u8) !void {
-            const allocator = std.heap.FixedBufferAllocator.init(&buf).allocator();
+            var fba = std.heap.FixedBufferAllocator.init(&buf);
+            const allocator = fba.allocator();
             const filepath = try std.fs.path.join(allocator, &.{ pref_path, "settings.json" });
             defer allocator.free(filepath);
             const file = try std.fs.cwd().openFile(filepath, .{});
@@ -52,7 +53,8 @@ const AppData = struct {
         }
 
         fn write(self: Settings, pref_path: []const u8) !void {
-            const allocator = std.heap.FixedBufferAllocator.init(&buf).allocator();
+            var fba = std.heap.FixedBufferAllocator.init(&buf);
+            const allocator = fba.allocator();
             const filepath = try std.fs.path.join(allocator, &.{ pref_path, "settings.json" });
             defer allocator.free(filepath);
             var file = try std.fs.cwd().createFile(filepath, .{});
@@ -159,10 +161,11 @@ const AppData = struct {
                 if (app.menu.song_selected < app.menu.songs.len) {
                     c.video_set_paused(app.video_background, 1);
                     const song = app.menu.songs[app.menu.song_selected];
-                    const allocator = std.heap.FixedBufferAllocator.init(&path_buf).allocator();
+                    var fba = std.heap.FixedBufferAllocator.init(&path_buf);
+                    const allocator = fba.allocator();
                     const filepath = try allocator.dupeZ(u8, song.video);
                     defer allocator.free(filepath);
-                    app.video_song = c.stream_open(filepath, app.vc) orelse return error.StreamOpenFail;
+                    app.video_song = c.stream_open(@ptrCast([*c]const u8, filepath), app.vc) orelse return error.StreamOpenFail;
                     //c.video_stream_seek(app.video_song, (3 * 60 + 52) * 1_000_000); // TEST: seek to end
                     c.video_set_volume(app.video_song, app.settings.volume);
                     app.state = .play;

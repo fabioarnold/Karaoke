@@ -19,7 +19,7 @@ pub fn loadSongs(allocator: std.mem.Allocator, pref_path: []const u8) ![]Song {
     const user_songs_path = try std.fs.path.join(allocator, &.{ pref_path, "songs" });
     defer allocator.free(user_songs_path);
     for ([_][]const u8{ "songs", user_songs_path }) |songs_path| {
-        const songs_dir = std.fs.cwd().openDir(songs_path, .{ .iterate = true }) catch |err| {
+        const songs_dir = std.fs.cwd().openIterableDir(songs_path, .{}) catch |err| {
             switch (err) {
                 error.FileNotFound => continue, // skip dir
                 else => return err,
@@ -30,7 +30,7 @@ pub fn loadSongs(allocator: std.mem.Allocator, pref_path: []const u8) ![]Song {
             if (entry.kind != .File) continue;
             const file_ext = std.fs.path.extension(entry.name);
             if (std.ascii.eqlIgnoreCase(".json", file_ext)) {
-                const file = try songs_dir.openFile(entry.name, .{});
+                const file = try songs_dir.dir.openFile(entry.name, .{});
                 defer file.close();
                 const len = try file.readAll(buf);
                 var stream = std.json.TokenStream.init(buf[0..len]);
